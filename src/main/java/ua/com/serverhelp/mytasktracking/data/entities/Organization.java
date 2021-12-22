@@ -12,6 +12,6 @@ public class Organization {
     private Long id;
     private String organizationName;
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id",nullable = false)
     private Account owner;
 }

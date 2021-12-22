@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
 import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
 
+import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 @RestController
@@ -16,6 +17,8 @@ import java.util.Optional;
 public class OrganizationRest {
     @Autowired
     private OrganizationRepository organizationRepository;
+    @Autowired
+    private HttpSession httpSession;
 
     @GetMapping("")
     public ResponseEntity<Organization> getAllOrganizations(

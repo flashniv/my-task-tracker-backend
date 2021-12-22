@@ -3,6 +3,7 @@ package ua.com.serverhelp.mytasktracking.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
@@ -14,6 +15,8 @@ import java.util.Optional;
 public class AccountRest {
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccount(
@@ -27,6 +30,7 @@ public class AccountRest {
     public ResponseEntity<Account> addAccount(
             @RequestBody Account account
     ){
+        account.setPasswordHash(passwordEncoder.encode(account.getPasswordHash()));
         return ResponseEntity.ok(accountRepository.save(account));
     }
 }

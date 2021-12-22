@@ -7,6 +7,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
@@ -24,6 +26,11 @@ import java.util.List;
 @EnableScheduling
 public class MyTaskTrackingApplication {
 	@Bean
+	public PasswordEncoder passwordEncoder(){
+		return new BCryptPasswordEncoder(4);
+	}
+
+	@Bean
 	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
 		return new CommandLineRunner() {
 			@Override
@@ -36,6 +43,7 @@ public class MyTaskTrackingApplication {
 				Account account=new Account();
 				account.setFirstName("acc1");
 				account.setLogin("acc1");
+				account.setPasswordHash("$2a$04$4WXX95/CCl59lHaOAI9oSe0OYbcAb7vV.rc.spjRKsZBTC4hMCl52");
 				accountRepository.save(account);
 
 				Organization organization=new Organization();
