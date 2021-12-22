@@ -3,6 +3,7 @@ package ua.com.serverhelp.mytasktracking.data.entities;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,4 +16,7 @@ public class Project {
     @ManyToOne
     @JoinColumn(name="organization_id", nullable=false)
     private Organization organization;
+    @ManyToMany(mappedBy = "projects")
+    private List<Team> teams = new ArrayList<>();
+
 }
