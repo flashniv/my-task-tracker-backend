@@ -23,5 +23,4 @@ public class Project {
             inverseJoinColumns = { @JoinColumn(name = "project_id") }
     )
     private List<Team> teams = new ArrayList<>();
-
 }

@@ -2,8 +2,9 @@ package ua.com.serverhelp.mytasktracking.data.entities;
 
 import lombok.Data;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
 @Data
@@ -15,7 +16,4 @@ public class Account {
     private String passwordHash;
     private String firstName;
     private String lastName;
-    @ManyToMany(mappedBy = "accounts")
-    private List<Team> teams;
-
 }

@@ -7,16 +7,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import ua.com.serverhelp.mytasktracking.data.entities.Account;
-import ua.com.serverhelp.mytasktracking.data.entities.Organization;
-import ua.com.serverhelp.mytasktracking.data.entities.Project;
-import ua.com.serverhelp.mytasktracking.data.entities.Team;
-import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.TeamRepository;
-
-import java.util.List;
 
 @SpringBootApplication
 @EnableCaching
@@ -27,7 +17,7 @@ public class MyTaskTrackingApplication {
 		return new CommandLineRunner() {
 			@Override
 			public void run(String... args) throws Exception {
-				AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
+				/*AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
 				TeamRepository teamRepository=ctx.getBean(TeamRepository.class);
@@ -53,7 +43,7 @@ public class MyTaskTrackingApplication {
 				team.setAccounts(List.of(account));
 
 				accountRepository.save(account);
-				teamRepository.save(team);
+				teamRepository.save(team);*/
 			}
 		};
 	}

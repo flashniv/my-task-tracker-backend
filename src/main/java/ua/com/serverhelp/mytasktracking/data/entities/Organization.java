@@ -2,8 +2,9 @@ package ua.com.serverhelp.mytasktracking.data.entities;
 
 import lombok.Data;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
 @Data
@@ -12,8 +13,4 @@ public class Organization {
     @GeneratedValue
     private Long id;
     private String organizationName;
-    @OneToMany(mappedBy="organization")
-    private List<Project> projects;
-    @OneToMany(mappedBy="organization")
-    private List<Team> teams;
 }
