@@ -15,12 +15,7 @@ public class Account {
     private String passwordHash;
     private String firstName;
     private String lastName;
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(
-            name = "account_team",
-            joinColumns = { @JoinColumn(name = "account_id") },
-            inverseJoinColumns = { @JoinColumn(name = "team_id") }
-    )
+    @ManyToMany(mappedBy = "accounts")
     private List<Team> teams;
 
 }

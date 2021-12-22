@@ -16,14 +16,14 @@ public class Team {
     @ManyToOne
     @JoinColumn(name="organization_id", nullable=false)
     private Organization organization;
-    @ManyToMany(mappedBy = "teams")
-    private List<Account> accounts = new ArrayList<>();
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
-            name = "team_project",
-            joinColumns = { @JoinColumn(name = "team_id") },
-            inverseJoinColumns = { @JoinColumn(name = "project_id") }
+            name = "account_team",
+            joinColumns = { @JoinColumn(name = "account_id") },
+            inverseJoinColumns = { @JoinColumn(name = "team_id") }
     )
+    private List<Account> accounts = new ArrayList<>();
+    @ManyToMany(mappedBy = "teams")
     private List<Project> projects;
 
 }

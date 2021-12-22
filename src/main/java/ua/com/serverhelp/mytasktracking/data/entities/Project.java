@@ -16,7 +16,12 @@ public class Project {
     @ManyToOne
     @JoinColumn(name="organization_id", nullable=false)
     private Organization organization;
-    @ManyToMany(mappedBy = "projects")
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "team_project",
+            joinColumns = { @JoinColumn(name = "team_id") },
+            inverseJoinColumns = { @JoinColumn(name = "project_id") }
+    )
     private List<Team> teams = new ArrayList<>();
 
 }
