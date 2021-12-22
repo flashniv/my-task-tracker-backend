@@ -16,7 +16,7 @@ public class Team {
     @ManyToOne
     @JoinColumn(name="organization_id", nullable=false)
     private Organization organization;
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany
     @JoinTable(
             name = "account_team",
             joinColumns = { @JoinColumn(name = "account_id") },

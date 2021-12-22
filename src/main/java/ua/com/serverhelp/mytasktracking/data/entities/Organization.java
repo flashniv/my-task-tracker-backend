@@ -2,9 +2,7 @@ package ua.com.serverhelp.mytasktracking.data.entities;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @Data
@@ -13,4 +11,7 @@ public class Organization {
     @GeneratedValue
     private Long id;
     private String organizationName;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private Account owner;
 }
