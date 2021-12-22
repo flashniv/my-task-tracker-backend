@@ -14,6 +14,10 @@ public class AccountUserDetail implements UserDetails {
         this.account = account;
     }
 
+    public Long getId(){
+        return account.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
