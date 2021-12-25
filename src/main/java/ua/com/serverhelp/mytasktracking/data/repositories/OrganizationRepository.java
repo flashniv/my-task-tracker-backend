@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface OrganizationRepository extends JpaRepository<Organization,Long> {
-    Optional<Organization> findByOwner(Account account);
+    List<Organization> findByOwner(Account account);
 }
