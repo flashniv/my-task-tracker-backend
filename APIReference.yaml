@@ -1,0 +1,226 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: my-tracker
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /account/:
+    get:
+      summary: Get account details
+      operationId: listUser
+      tags:
+        - account
+      responses:
+        '200':
+          description: Account of your user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          description: Account nof found in db
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Add new account
+      description: ''
+      operationId: addPet
+      parameters:
+        - in: query
+          name: account
+          description: Add new account after registration
+          required: true
+          schema:
+            $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          description: Account of your user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        default:
+          description: Default error sample response
+      tags:
+        - account
+  /organization/:
+    summary: all about org. Add, delete, edit
+    get:
+      summary: Get all my organiztion
+      description: ''
+      operationId: getOrgs
+      responses:
+        '200':
+          description: Your organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+        default:
+          description: Default error sample response
+      tags:
+        - organization
+    post:
+      summary: Add organiztion
+      description: ''
+      operationId: addOrg
+      parameters:
+        - in: query
+          name: organization
+          description: Add new organization
+          required: true
+          schema:
+            $ref: '#/components/schemas/Organization'
+      responses:
+        '200':
+          description: Account of your user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - organization
+  /organization/{organizationId}:
+    delete:
+      summary: Delete organiztion
+      operationId: deleteOrg
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema:
+            type: 'integer'
+      responses:
+        '200':
+          description: Success
+        '403':
+          description: Access denied for this user
+        '404':
+          description: Organization not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - organization
+    put:
+      summary: Update organiztion
+      operationId: updateOrg
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema:
+            type: 'integer'
+        - in: query
+          name: organization
+          description: Add new organization
+          required: true
+          schema:
+            $ref: '#/components/schemas/Organization'
+
+      responses:
+        '200':
+          description: Success
+        '403':
+          description: Access denied for this user
+        '404':
+          description: Organization not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - organization
+components:
+  schemas:
+    Account:
+      type: object
+      required:
+        - login
+        - passwordHash
+      properties:
+        id:
+          type: integer
+          format: int64
+        login:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        passwordHash:
+          type: string
+    Organization:
+      type: object
+      required:
+        - organizationName
+      properties:
+        id:
+          type: integer
+          format: int64
+        organizationName:
+          type: string
+        owner:
+          $ref: '#/components/schemas/Account'
+    Team:
+      type: object
+      required:
+        - teamName
+      properties:
+        id:
+          type: integer
+          format: int64
+        teamName:
+          type: string
+        organization:
+          $ref: '#/components/schemas/Organization'
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+    Project:
+      type: object
+      required:
+        - projectName
+      properties:
+        id:
+          type: integer
+          format: int64
+        projectName:
+          type: string
+        organization:
+          $ref: '#/components/schemas/Organization'
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/Team'
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+security:
+  - BasicAuth: []

@@ -52,15 +52,15 @@ public class OrganizationRest {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 
-    @PostMapping("/delete/")
+    @DeleteMapping("/{organizationId}")
     public ResponseEntity<String> delete(
-            @RequestBody Organization inputOrganization,
+            @PathVariable long organizationId,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> organization=organizationRepository.findById(inputOrganization.getId());
+            Optional<Organization> organization=organizationRepository.findById(organizationId);
             if(organization.isPresent()){
                 if(organization.get().getOwner().getId()==uid){
                     organizationRepository.delete(organization.get());
@@ -72,17 +72,19 @@ public class OrganizationRest {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request");
     }
-    @PostMapping("/update/")
+    @PutMapping("/{organizationId}")
     public ResponseEntity<String> update(
+            @PathVariable long organizationId,
             @RequestBody Organization inputOrganization,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> organization=organizationRepository.findById(inputOrganization.getId());
+            Optional<Organization> organization=organizationRepository.findById(organizationId);
             if(organization.isPresent()){
                 if(organization.get().getOwner().getId()==uid){
+                    inputOrganization.setId(organizationId);
                     organizationRepository.save(inputOrganization);
                     return ResponseEntity.ok("Success");
                 }
