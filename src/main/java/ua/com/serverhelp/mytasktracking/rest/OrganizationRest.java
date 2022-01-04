@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/organization")
+@CrossOrigin
 public class OrganizationRest {
     @Autowired
     private OrganizationRepository organizationRepository;

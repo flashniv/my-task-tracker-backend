@@ -30,7 +30,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         http.logout().permitAll();
         http.authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll();
         http.authorizeRequests().antMatchers("/error").permitAll();
-
+        http.authorizeRequests().antMatchers(HttpMethod.POST,"/api/account/").permitAll();
 
         http.authorizeRequests().anyRequest().authenticated();
     }
