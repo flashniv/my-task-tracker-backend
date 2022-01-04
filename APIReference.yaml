@@ -30,13 +30,13 @@ paths:
       summary: Add new account
       description: ''
       operationId: addPet
-      parameters:
-        - in: query
-          name: account
-          description: Add new account after registration
-          required: true
-          schema:
-            $ref: '#/components/schemas/Account'
+      requestBody:
+        description: Add new account after registration
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
       responses:
         '200':
           description: Account of your user
@@ -71,13 +71,13 @@ paths:
       summary: Add organiztion
       description: ''
       operationId: addOrg
-      parameters:
-        - in: query
-          name: organization
-          description: Add new organization
-          required: true
-          schema:
-            $ref: '#/components/schemas/Organization'
+      requestBody:
+        description: Organization in JSON
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
       responses:
         '200':
           description: Account of your user
@@ -123,13 +123,13 @@ paths:
           required: true
           schema:
             type: 'integer'
-        - in: query
-          name: organization
-          description: Add new organization
-          required: true
-          schema:
-            $ref: '#/components/schemas/Organization'
-
+      requestBody:
+        description: Organization JSON
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
       responses:
         '200':
           description: Success
@@ -143,6 +143,69 @@ paths:
           description: Default error sample response
       tags:
         - organization
+  /project/:
+    summary: all about project. Add, delete, edit
+    get:
+      summary: Get all organization by project
+      description: ''
+      operationId: getProjects
+      parameters:
+        - in: query
+          name: organizationId
+          description: Org id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Projects in org
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        default:
+          description: Default error sample response
+      tags:
+        - project
+    post:
+      summary: Add project
+      description: ''
+      operationId: addProj
+      parameters:
+        - in: query
+          name: organizationId
+          description: Org id for new project
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Project
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: Account of your user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '403':
+          description: Access denied for organization
+        '404':
+          description: Organization not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - project
+
+
 components:
   schemas:
     Account:
@@ -174,22 +237,6 @@ components:
           type: string
         owner:
           $ref: '#/components/schemas/Account'
-    Team:
-      type: object
-      required:
-        - teamName
-      properties:
-        id:
-          type: integer
-          format: int64
-        teamName:
-          type: string
-        organization:
-          $ref: '#/components/schemas/Organization'
-        accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Account'
     Project:
       type: object
       required:
@@ -202,11 +249,6 @@ components:
           type: string
         organization:
           $ref: '#/components/schemas/Organization'
-        teams:
-          type: array
-          items:
-            $ref: '#/components/schemas/Team'
-
     Error:
       type: object
       required:
