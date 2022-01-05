@@ -12,9 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
 import ua.com.serverhelp.mytasktracking.data.entities.Project;
+import ua.com.serverhelp.mytasktracking.data.entities.Task;
 import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
 import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
 import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
+import ua.com.serverhelp.mytasktracking.data.repositories.TaskRepository;
 
 @SpringBootApplication
 @EnableCaching
@@ -33,6 +35,7 @@ public class MyTaskTrackingApplication {
 				AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
+				TaskRepository taskRepository=ctx.getBean(TaskRepository.class);
 
 				Account account=new Account();
 				account.setFirstName("acc1");
@@ -49,6 +52,16 @@ public class MyTaskTrackingApplication {
 				project.setProjectName("my proj");
 				project.setOrganization(organization);
 				projectRepository.save(project);
+
+				Task task=new Task();
+				task.setProject(project);
+				task.setTitle("task1");
+				taskRepository.save(task);
+
+				Task task1=new Task();
+				task1.setProject(project);
+				task1.setTitle("task2");
+				taskRepository.save(task1);
 			}
 		};
 	}

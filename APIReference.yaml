@@ -216,13 +216,6 @@ paths:
           required: true
           schema:
             type: integer
-        - in: query
-          name: organizationId
-          description: Org id
-          required: true
-          schema:
-            type: integer
-
       responses:
         '200':
           description: Project found and return
@@ -246,12 +239,6 @@ paths:
           required: true
           schema:
             type: integer
-        - in: query
-          name: organizationId
-          description: Org id
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Project found and delete
@@ -268,12 +255,6 @@ paths:
       parameters:
         - in: path
           name: projectId
-          required: true
-          schema:
-            type: integer
-        - in: query
-          name: organizationId
-          description: Org id
           required: true
           schema:
             type: integer
@@ -298,7 +279,33 @@ paths:
           description: Access denied for project
         default:
           description: Default error sample response
-
+  /project/{projectId}/tasks:
+    summary: Project edit, delete
+    get:
+      tags:
+        - project
+      summary: get tasks by project id
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project found and tasks return
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '404':
+          description: project not found
+        '403':
+          description: Access denied for project
+        default:
+          description: Default error sample response
 
 components:
   schemas:

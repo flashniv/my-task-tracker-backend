@@ -10,9 +10,11 @@ import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
 import ua.com.serverhelp.mytasktracking.data.entities.Project;
+import ua.com.serverhelp.mytasktracking.data.entities.Task;
 import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
 import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
 import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
+import ua.com.serverhelp.mytasktracking.data.repositories.TaskRepository;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +30,8 @@ public class ProjectRest {
     private OrganizationRepository organizationRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getProjects(
@@ -74,27 +78,18 @@ public class ProjectRest {
 
     @GetMapping(value = "/{projectId}",produces = "application/json")
     public ResponseEntity<Project> getProjectById(
-            @RequestParam long organizationId,
             @PathVariable long projectId,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
-            if (optionalOrganization.isPresent()){
-                Organization organization=optionalOrganization.get();
-                if(!Objects.equals(organization.getOwner().getId(), account.get().getId())){
+            Optional<Project> project = projectRepository.findById(projectId);
+            if (project.isPresent()) {
+                if (!Objects.equals(project.get().getOrganization().getOwner().getId(), account.get().getId())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
                 }
-                Optional<Project> project=projectRepository.findById(projectId);
-
-                if (project.isPresent()) {
-                    if(!Objects.equals(project.get().getOrganization().getId(), organization.getId())){
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-                    }
-                    return ResponseEntity.ok().body(project.get());
-                }
+                return ResponseEntity.ok().body(project.get());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -102,27 +97,19 @@ public class ProjectRest {
 
     @DeleteMapping(value = "/{projectId}")
     public ResponseEntity<String> deleteProjectById(
-            @RequestParam long organizationId,
             @PathVariable long projectId,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
-            if (optionalOrganization.isPresent()){
-                Organization organization=optionalOrganization.get();
-                if(!Objects.equals(organization.getOwner().getId(), account.get().getId())){
+            Optional<Project> project=projectRepository.findById(projectId);
+            if (project.isPresent()){
+                if(!Objects.equals(project.get().getOrganization().getOwner().getId(), account.get().getId())){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                Optional<Project> project=projectRepository.findById(projectId);
-                if (project.isPresent()) {
-                    if(!Objects.equals(project.get().getOrganization().getId(), organization.getId())){
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
-                    }
-                    projectRepository.delete(project.get());
-                    return ResponseEntity.ok().body("Success");
-                }
+                projectRepository.delete(project.get());
+                return ResponseEntity.ok().body("Success");
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
@@ -130,7 +117,6 @@ public class ProjectRest {
 
     @PutMapping(value = "/{projectId}",produces = "application/json")
     public ResponseEntity<Project> updateProjectById(
-            @RequestParam long organizationId,
             @PathVariable long projectId,
             @RequestBody Project project,
             Authentication authentication
@@ -138,17 +124,38 @@ public class ProjectRest {
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
-            if (optionalOrganization.isPresent()){
-                Organization organization=optionalOrganization.get();
-                if(!Objects.equals(organization.getOwner().getId(), account.get().getId())){
+            Optional<Project> projectOptional=projectRepository.findById(projectId);
+            if(projectOptional.isPresent()){
+                if(!Objects.equals(projectOptional.get().getOrganization().getOwner().getId(), account.get().getId())){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
                 }
-                project.setOrganization(organization);
+                project.setOrganization(projectOptional.get().getOrganization());
                 project.setId(projectId);
                 return ResponseEntity.ok(projectRepository.save(project));
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
+
+    @GetMapping(value = "/{projectId}/tasks",produces = "application/json")
+    public ResponseEntity<String> getProjectTasksById(
+            @PathVariable long projectId,
+            Authentication authentication
+    ){
+        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account=accountRepository.findById(uid);
+        if(account.isPresent()) {
+            Optional<Project> project = projectRepository.findById(projectId);
+            if (project.isPresent()) {
+                if (!Objects.equals(project.get().getOrganization().getOwner().getId(), account.get().getId())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                List<Task> taskList=taskRepository.findByProject(project.get());
+
+                return ResponseEntity.ok().body(new JSONArray(taskList).toString());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Access denied");
+    }
+
 }
