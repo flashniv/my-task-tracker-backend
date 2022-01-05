@@ -1,11 +1,12 @@
 package ua.com.serverhelp.mytasktracking.data.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ua.com.serverhelp.mytasktracking.data.entities.Organization;
+import org.springframework.data.jpa.repository.Query;
 import ua.com.serverhelp.mytasktracking.data.entities.Project;
 
 import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project,Long> {
-    List<Project> findByOrganization(Organization organization);
+    @Query("SELECT p FROM Project p JOIN FETCH p.organization o JOIN FETCH o.owner ow WHERE ow.id = :id")
+    List<Project> findByOwner(Long id);
 }

@@ -35,35 +35,26 @@ public class ProjectRest {
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getProjects(
-            @RequestParam long organizationId,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
-            if (optionalOrganization.isPresent()){
-                Organization organization=optionalOrganization.get();
-                if(!Objects.equals(organization.getOwner().getId(), account.get().getId())){
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
-                }
-                List<Project> projectList=projectRepository.findByOrganization(organization);
-                return ResponseEntity.ok().body(new JSONArray(projectList).toString());
-            }
+            List<Project> projectList=projectRepository.findByOwner(account.get().getId());
+            return ResponseEntity.ok().body(new JSONArray(projectList).toString());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
 
     @PostMapping(value = "/")
     public ResponseEntity<Project> addProjects(
-            @RequestParam long organizationId,
             @RequestBody Project project,
             Authentication authentication
     ){
         long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account=accountRepository.findById(uid);
         if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
+            Optional<Organization> optionalOrganization=organizationRepository.findById(project.getOrganization().getId());
             if (optionalOrganization.isPresent()){
                 Organization organization=optionalOrganization.get();
                 if(!Objects.equals(organization.getOwner().getId(), account.get().getId())){

@@ -146,16 +146,9 @@ paths:
   /project/:
     summary: all about project. Add, delete, edit
     get:
-      summary: Get all organization by project
+      summary: Get all projects
       description: ''
       operationId: getProjects
-      parameters:
-        - in: query
-          name: organizationId
-          description: Org id
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Projects in org
@@ -173,13 +166,6 @@ paths:
       summary: Add project
       description: ''
       operationId: addProj
-      parameters:
-        - in: query
-          name: organizationId
-          description: Org id for new project
-          required: true
-          schema:
-            type: integer
       requestBody:
         description: Project
         required: true
@@ -306,6 +292,193 @@ paths:
           description: Access denied for project
         default:
           description: Default error sample response
+  /task/:
+    summary: all about task. Add, delete, edit
+    get:
+      summary: Get all tasks
+      responses:
+        '200':
+          description: return all Tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        default:
+          description: Default error sample response
+      tags:
+        - task
+    post:
+      summary: Add task
+      requestBody:
+        description: Task
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Account of your user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+  /task/{taskId}:
+    summary: all about task. Add, delete, edit
+    get:
+      summary: Get task details
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: return Task by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+    delete:
+      summary: Delete task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Deleted
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+    put:
+      summary: Update task details
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated Task
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+  /task/{taskId}/updateStatus:
+    summary: Update task status
+    put:
+      summary: Update task status
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: newStatus
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+  /task/{taskId}/updateMinutes:
+    summary: Update task minutes
+    put:
+      summary: Update task minutes
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: newMinutes
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
 
 components:
   schemas:
