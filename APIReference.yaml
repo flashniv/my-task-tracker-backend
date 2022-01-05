@@ -204,6 +204,100 @@ paths:
           description: Default error sample response
       tags:
         - project
+  /project/{projectId}:
+    summary: Project edit, delete
+    get:
+      tags:
+        - project
+      summary: get project details by id
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: organizationId
+          description: Org id
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: Project found and return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: project not found
+        '403':
+          description: Access denied for project
+        default:
+          description: Default error sample response
+    delete:
+      tags:
+        - project
+      summary: delete project by id
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: organizationId
+          description: Org id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project found and delete
+        '404':
+          description: project not found
+        '403':
+          description: Access denied for project
+        default:
+          description: Default error sample response
+    put:
+      tags:
+        - project
+      summary: update project by id
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: organizationId
+          description: Org id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Project
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+
+      responses:
+        '200':
+          description: Project found and update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: project not found
+        '403':
+          description: Access denied for project
+        default:
+          description: Default error sample response
 
 
 components:
@@ -249,6 +343,29 @@ components:
           type: string
         organization:
           $ref: '#/components/schemas/Organization'
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        project:
+          $ref: '#/components/schemas/Project'
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        minutes:
+          type: integer
+    TaskStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
     Error:
       type: object
       required:
