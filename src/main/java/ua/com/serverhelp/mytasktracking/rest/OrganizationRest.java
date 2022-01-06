@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
 import ua.com.serverhelp.mytasktracking.data.entities.Account;
 import ua.com.serverhelp.mytasktracking.data.entities.Organization;
+import ua.com.serverhelp.mytasktracking.data.entities.Project;
 import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
 import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
+import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,8 @@ public class OrganizationRest {
     private OrganizationRepository organizationRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getAllOrganizations(
@@ -34,6 +38,25 @@ public class OrganizationRest {
             List<Organization> organizations = organizationRepository.findByOwner(account.get());
             JSONArray result=new JSONArray(organizations);
             return ResponseEntity.ok(result.toString());
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+    @GetMapping(value = "/{organizationId}/projects",produces = "application/json")
+    public ResponseEntity<String> getProjectsByOrg(
+            @PathVariable long organizationId,
+            Authentication authentication
+    ){
+        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account=accountRepository.findById(uid);
+        if(account.isPresent()) {
+            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
+            if(optionalOrganization.isPresent()){
+                if (optionalOrganization.get().getOwner().getId()!=uid){
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                List<Project> projectList=projectRepository.findByOrganization(optionalOrganization.get());
+                return ResponseEntity.ok().body(new JSONArray(projectList).toString());
+            }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }

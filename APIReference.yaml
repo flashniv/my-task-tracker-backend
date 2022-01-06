@@ -143,6 +143,34 @@ paths:
           description: Default error sample response
       tags:
         - organization
+  /organization/{organizationId}/projects:
+    get:
+      summary: Get project by organization
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema:
+            type: 'integer'
+      responses:
+        '200':
+          description: projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '403':
+          description: Access denied for this user
+        '404':
+          description: Organization not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - organization
   /project/:
     summary: all about project. Add, delete, edit
     get:
