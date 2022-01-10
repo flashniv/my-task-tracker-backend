@@ -15,7 +15,4 @@ public class Task {
     private Project project;
     private String title;
     private String description;
-    @Enumerated(EnumType.ORDINAL)
-    private TaskStatus status=TaskStatus.NEW;
-    private int minutes=0;
 }

@@ -8,14 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
-import ua.com.serverhelp.mytasktracking.data.entities.Account;
-import ua.com.serverhelp.mytasktracking.data.entities.Project;
-import ua.com.serverhelp.mytasktracking.data.entities.Task;
-import ua.com.serverhelp.mytasktracking.data.entities.TaskStatus;
-import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.TaskRepository;
+import ua.com.serverhelp.mytasktracking.data.entities.*;
+import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +26,8 @@ public class TaskRest {
     private AccountRepository accountRepository;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private HistoryItemRepository historyItemRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getTasks(
@@ -59,7 +55,12 @@ public class TaskRest {
                 if(projectOptional.get().getOrganization().getOwner().getId()!=uid){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                return ResponseEntity.ok().body(new JSONObject(taskRepository.save(task)).toString());
+                Task task1=taskRepository.save(task);
+                HistoryItem historyItem=new HistoryItem();
+                historyItem.setTask(task1);
+                historyItem.setStatus(TaskStatus.NEW);
+                historyItemRepository.save(historyItem);
+                return ResponseEntity.ok().body(new JSONObject(task1).toString());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
@@ -96,6 +97,8 @@ public class TaskRest {
                 if(task.get().getProject().getOrganization().getOwner().getId()!=uid){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
+                List<HistoryItem> history=historyItemRepository.findByTask(task.get());
+                historyItemRepository.deleteAll(history);
                 taskRepository.delete(task.get());
                 return ResponseEntity.ok().body("Success");
             }
@@ -139,19 +142,21 @@ public class TaskRest {
                 }
                 Task task=taskOptional.get();
                 try {
-                    task.setStatus(TaskStatus.valueOf(newStatus));
+                    HistoryItem historyItem = new HistoryItem();
+                    historyItem.setTask(task);
+                    historyItem.setStatus(TaskStatus.valueOf(newStatus));
+                    historyItemRepository.save(historyItem);
                 }catch (IllegalArgumentException e){
                     return ResponseEntity.badRequest().body("Status invalid");
                 }
-                return ResponseEntity.ok().body(new JSONObject(taskRepository.save(task)).toString());
+                return ResponseEntity.ok().body(new JSONObject(task).toString());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
-    @PutMapping(value = "/{taskId}/updateMinutes",produces = "application/json")
-    public ResponseEntity<String> updateTaskMinutes(
+    @GetMapping(value = "/{taskId}/history",produces = "application/json")
+    public ResponseEntity<String> updateTaskStatus(
             @PathVariable long taskId,
-            @RequestParam String newMinutes,
             Authentication authentication
     ) {
         long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
@@ -163,29 +168,25 @@ public class TaskRest {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
                 Task task=taskOptional.get();
-                try {
-                    task.setMinutes(getNewMinutesValue(task.getMinutes(),newMinutes));
-                }catch (IllegalArgumentException e){
-                    return ResponseEntity.badRequest().body("Status invalid");
-                }
-                return ResponseEntity.ok().body(new JSONObject(taskRepository.save(task)).toString());
+                List<HistoryItem> historyItems=historyItemRepository.findByTask(task);
+                return ResponseEntity.ok().body(new JSONArray(historyItems).toString());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
 
-    private int getNewMinutesValue(int minutes, String newMinutes) throws IllegalArgumentException {
-        if (newMinutes.matches("\\+[0-9]+")){
-            return minutes+Integer.parseInt(newMinutes);
-        } else if (newMinutes.matches("-[0-9]+")){
-            minutes=minutes+Integer.parseInt(newMinutes);
-            if (minutes>=0) {
-                return minutes;
-            }
-            throw new IllegalArgumentException("Negative value returned");
-        } else if (newMinutes.matches("[0-9]+")){
-            return Integer.parseInt(newMinutes);
-        }
-        throw new IllegalArgumentException("Input newMinutes invalid");
-    }
+//    private int getNewMinutesValue(int minutes, String newMinutes) throws IllegalArgumentException {
+//        if (newMinutes.matches("\\+[0-9]+")){
+//            return minutes+Integer.parseInt(newMinutes);
+//        } else if (newMinutes.matches("-[0-9]+")){
+//            minutes=minutes+Integer.parseInt(newMinutes);
+//            if (minutes>=0) {
+//                return minutes;
+//            }
+//            throw new IllegalArgumentException("Negative value returned");
+//        } else if (newMinutes.matches("[0-9]+")){
+//            return Integer.parseInt(newMinutes);
+//        }
+//        throw new IllegalArgumentException("Input newMinutes invalid");
+//    }
 }

@@ -475,28 +475,24 @@ paths:
           description: Default error sample response
       tags:
         - task
-  /task/{taskId}/updateMinutes:
-    summary: Update task minutes
-    put:
-      summary: Update task minutes
+  /task/{taskId}/history:
+    get:
+      summary: Get task history
       parameters:
         - in: path
           name: taskId
           required: true
           schema:
             type: integer
-        - in: query
-          name: newMinutes
-          required: true
-          schema:
-            type: string
       responses:
         '200':
-          description: return updated Task
+          description: return history of Task
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
         '403':
           description: Access denied
         '404':
@@ -563,10 +559,6 @@ components:
           type: string
         description:
           type: string
-        status:
-          $ref: '#/components/schemas/TaskStatus'
-        minutes:
-          type: integer
     TaskStatus:
       type: object
       properties:
@@ -574,6 +566,18 @@ components:
           type: integer
         name:
           type: string
+    HistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        task:
+          $ref: '#/components/schemas/Task'
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/TaskStatus'
     Error:
       type: object
       required:

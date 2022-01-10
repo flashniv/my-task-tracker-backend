@@ -9,14 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ua.com.serverhelp.mytasktracking.data.entities.Account;
-import ua.com.serverhelp.mytasktracking.data.entities.Organization;
-import ua.com.serverhelp.mytasktracking.data.entities.Project;
-import ua.com.serverhelp.mytasktracking.data.entities.Task;
-import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.TaskRepository;
+import ua.com.serverhelp.mytasktracking.data.entities.*;
+import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
 @SpringBootApplication
 @EnableCaching
@@ -36,6 +30,7 @@ public class MyTaskTrackingApplication {
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
 				TaskRepository taskRepository=ctx.getBean(TaskRepository.class);
+				HistoryItemRepository historyItemRepository=ctx.getBean(HistoryItemRepository.class);
 
 				Account account=new Account();
 				account.setFirstName("acc1");
@@ -58,10 +53,20 @@ public class MyTaskTrackingApplication {
 				task.setTitle("task1");
 				taskRepository.save(task);
 
+				HistoryItem historyItem=new HistoryItem();
+				historyItem.setTask(task);
+				historyItem.setStatus(TaskStatus.NEW);
+				historyItemRepository.save(historyItem);
+
 				Task task1=new Task();
 				task1.setProject(project);
 				task1.setTitle("task2");
 				taskRepository.save(task1);
+
+				HistoryItem historyItem1=new HistoryItem();
+				historyItem1.setTask(task1);
+				historyItem1.setStatus(TaskStatus.NEW);
+				historyItemRepository.save(historyItem1);
 			}
 		};
 	}
