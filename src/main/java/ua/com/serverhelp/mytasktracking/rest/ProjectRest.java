@@ -1,21 +1,19 @@
 package ua.com.serverhelp.mytasktracking.rest;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
-import ua.com.serverhelp.mytasktracking.data.entities.Account;
-import ua.com.serverhelp.mytasktracking.data.entities.Organization;
-import ua.com.serverhelp.mytasktracking.data.entities.Project;
-import ua.com.serverhelp.mytasktracking.data.entities.Task;
-import ua.com.serverhelp.mytasktracking.data.repositories.AccountRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.OrganizationRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.ProjectRepository;
-import ua.com.serverhelp.mytasktracking.data.repositories.TaskRepository;
+import ua.com.serverhelp.mytasktracking.data.entities.*;
+import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +30,8 @@ public class ProjectRest {
     private AccountRepository accountRepository;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private HistoryItemRepository historyItemRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getProjects(
@@ -141,9 +141,33 @@ public class ProjectRest {
                 if (!Objects.equals(project.get().getOrganization().getOwner().getId(), account.get().getId())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
+                JSONArray result=new JSONArray();
                 List<Task> taskList=taskRepository.findByProject(project.get());
+                for (Task task:taskList){
+                    JSONObject jsonTask=new JSONObject(task);
+                    List<HistoryItem> historyItems=historyItemRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
 
-                return ResponseEntity.ok().body(new JSONArray(taskList).toString());
+                    Instant start=null;
+                    int seconds=0;
+                    for (int i = historyItems.size()-1; i >=0 ; i--) {
+                        HistoryItem historyItem=historyItems.get(i);
+                        if(start==null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) continue;
+                        if(start==null && historyItem.getStatus()==TaskStatus.IN_PROGRESS) start=historyItem.getTimestamp();
+                        if(start!=null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) {
+                            Duration duration=Duration.between(start,historyItem.getTimestamp());
+                            seconds+=duration.getSeconds();
+                            start=null;
+                        }
+                    }
+                    if (start!=null){
+                        seconds+=Duration.between(start, Instant.now()).getSeconds();
+                    }
+                    jsonTask.put("history", new JSONArray(historyItems));
+                    jsonTask.put("seconds", seconds);
+                    result.put(jsonTask);
+                }
+
+                return ResponseEntity.ok().body(result.toString());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Access denied");

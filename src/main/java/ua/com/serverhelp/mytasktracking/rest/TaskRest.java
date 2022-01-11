@@ -3,6 +3,7 @@ package ua.com.serverhelp.mytasktracking.rest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -97,7 +98,7 @@ public class TaskRest {
                 if(task.get().getProject().getOrganization().getOwner().getId()!=uid){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                List<HistoryItem> history=historyItemRepository.findByTask(task.get());
+                List<HistoryItem> history=historyItemRepository.findByTask(task.get(), Sort.unsorted());
                 historyItemRepository.deleteAll(history);
                 taskRepository.delete(task.get());
                 return ResponseEntity.ok().body("Success");
@@ -154,39 +155,4 @@ public class TaskRest {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
-    @GetMapping(value = "/{taskId}/history",produces = "application/json")
-    public ResponseEntity<String> updateTaskStatus(
-            @PathVariable long taskId,
-            Authentication authentication
-    ) {
-        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account = accountRepository.findById(uid);
-        if (account.isPresent()) {
-            Optional<Task> taskOptional=taskRepository.findById(taskId);
-            if (taskOptional.isPresent()){
-                if(taskOptional.get().getProject().getOrganization().getOwner().getId()!=uid){
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
-                }
-                Task task=taskOptional.get();
-                List<HistoryItem> historyItems=historyItemRepository.findByTask(task);
-                return ResponseEntity.ok().body(new JSONArray(historyItems).toString());
-            }
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
-    }
-
-//    private int getNewMinutesValue(int minutes, String newMinutes) throws IllegalArgumentException {
-//        if (newMinutes.matches("\\+[0-9]+")){
-//            return minutes+Integer.parseInt(newMinutes);
-//        } else if (newMinutes.matches("-[0-9]+")){
-//            minutes=minutes+Integer.parseInt(newMinutes);
-//            if (minutes>=0) {
-//                return minutes;
-//            }
-//            throw new IllegalArgumentException("Negative value returned");
-//        } else if (newMinutes.matches("[0-9]+")){
-//            return Integer.parseInt(newMinutes);
-//        }
-//        throw new IllegalArgumentException("Input newMinutes invalid");
-//    }
 }

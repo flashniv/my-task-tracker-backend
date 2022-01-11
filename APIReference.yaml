@@ -475,34 +475,6 @@ paths:
           description: Default error sample response
       tags:
         - task
-  /task/{taskId}/history:
-    get:
-      summary: Get task history
-      parameters:
-        - in: path
-          name: taskId
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: return history of Task
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Task'
-        '403':
-          description: Access denied
-        '404':
-          description: Not found
-        '400':
-          description: Common error
-        default:
-          description: Default error sample response
-      tags:
-        - task
 
 components:
   schemas:
@@ -559,6 +531,10 @@ components:
           type: string
         description:
           type: string
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryItem'
     TaskStatus:
       type: object
       properties:
