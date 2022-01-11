@@ -26,7 +26,7 @@ public class MyTaskTrackingApplication {
 		return new CommandLineRunner() {
 			@Override
 			public void run(String... args) throws Exception {
-				AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
+				/*AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
 				TaskRepository taskRepository=ctx.getBean(TaskRepository.class);
@@ -66,7 +66,7 @@ public class MyTaskTrackingApplication {
 				HistoryItem historyItem1=new HistoryItem();
 				historyItem1.setTask(task1);
 				historyItem1.setStatus(TaskStatus.NEW);
-				historyItemRepository.save(historyItem1);
+				historyItemRepository.save(historyItem1);*/
 			}
 		};
 	}
