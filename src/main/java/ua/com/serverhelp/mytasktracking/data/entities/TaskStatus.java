@@ -1,14 +1,20 @@
 package ua.com.serverhelp.mytasktracking.data.entities;
 
-public enum TaskStatus {
-    DRAFT,
-    NEW,
-    VIEWED,
-    READY_TO_PROGRESS,
-    IN_PROGRESS,
-    ON_TEST,
-    ON_REVIEW,
-    BLOCKED,
-    ON_PAUSE,
-    DONE
+import lombok.Data;
+
+import javax.persistence.*;
+import java.time.Instant;
+
+@Entity
+@Data
+public class TaskStatus {
+    @Id
+    @GeneratedValue
+    private Long id;
+    @ManyToOne
+    @JoinColumn(name="task_id", nullable=false)
+    private Task task;
+    private Instant timestamp=Instant.now();
+    @Enumerated(EnumType.ORDINAL)
+    private TaskStatusEnum taskStatus=TaskStatusEnum.NEW;
 }

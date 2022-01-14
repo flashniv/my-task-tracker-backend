@@ -7,14 +7,13 @@ import java.time.Instant;
 
 @Entity
 @Data
-public class HistoryItem {
+public class Period {
     @Id
     @GeneratedValue
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "task_id",nullable = false)
+    @JoinColumn(name="task_id", nullable=false)
     private Task task;
-    private Instant timestamp=Instant.now();
-    @Enumerated(EnumType.ORDINAL)
-    private TaskStatus status;
+    private Instant start=Instant.now();
+    private Instant stop=null;
 }

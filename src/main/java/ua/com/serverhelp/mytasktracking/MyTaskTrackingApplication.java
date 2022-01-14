@@ -26,11 +26,12 @@ public class MyTaskTrackingApplication {
 		return new CommandLineRunner() {
 			@Override
 			public void run(String... args) throws Exception {
-				/*AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
+				AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
 				TaskRepository taskRepository=ctx.getBean(TaskRepository.class);
-				HistoryItemRepository historyItemRepository=ctx.getBean(HistoryItemRepository.class);
+				TaskStatusRepository taskStatusRepository=ctx.getBean(TaskStatusRepository.class);
+				PeriodRepository periodRepository=ctx.getBean(PeriodRepository.class);
 
 				Account account=new Account();
 				account.setFirstName("acc1");
@@ -53,20 +54,27 @@ public class MyTaskTrackingApplication {
 				task.setTitle("task1");
 				taskRepository.save(task);
 
-				HistoryItem historyItem=new HistoryItem();
-				historyItem.setTask(task);
-				historyItem.setStatus(TaskStatus.NEW);
-				historyItemRepository.save(historyItem);
+				TaskStatus taskStatus=new TaskStatus();
+				taskStatus.setTask(task);
+				taskStatusRepository.save(taskStatus);
+
+				Period period=new Period();
+				period.setTask(task);
+				periodRepository.save(period);
 
 				Task task1=new Task();
 				task1.setProject(project);
 				task1.setTitle("task2");
 				taskRepository.save(task1);
 
-				HistoryItem historyItem1=new HistoryItem();
-				historyItem1.setTask(task1);
-				historyItem1.setStatus(TaskStatus.NEW);
-				historyItemRepository.save(historyItem1);*/
+				TaskStatus taskStatus1=new TaskStatus();
+				taskStatus1.setTask(task1);
+				taskStatusRepository.save(taskStatus1);
+
+				Period period1=new Period();
+				period1.setTask(task1);
+				periodRepository.save(period1);
+
 			}
 		};
 	}

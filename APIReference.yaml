@@ -475,6 +475,92 @@ paths:
           description: Default error sample response
       tags:
         - task
+  /task/{taskId}/startPeriod:
+    summary: start task period
+    post:
+      summary: start task period
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+  /task/{taskId}/stopPeriod:
+    summary: stop task period
+    post:
+      summary: stop task period
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
+  /task/{taskId}/resetPeriod:
+    summary: reset task period
+    post:
+      summary: reset task period
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: newSeconds
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
 
 components:
   schemas:
@@ -531,18 +617,7 @@ components:
           type: string
         description:
           type: string
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/HistoryItem'
     TaskStatus:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-    HistoryItem:
       type: object
       properties:
         id:
@@ -552,8 +627,15 @@ components:
         timestamp:
           type: string
           format: date-time
+        taskStatus:
+          $ref: '#/components/schemas/TaskStatusEnum'
+    TaskStatusEnum:
+      type: object
+      properties:
+        id:
+          type: integer
         status:
-          $ref: '#/components/schemas/TaskStatus'
+          type: string
     Error:
       type: object
       required:

@@ -30,8 +30,6 @@ public class ProjectRest {
     private AccountRepository accountRepository;
     @Autowired
     private TaskRepository taskRepository;
-    @Autowired
-    private HistoryItemRepository historyItemRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getProjects(
@@ -145,25 +143,8 @@ public class ProjectRest {
                 List<Task> taskList=taskRepository.findByProject(project.get());
                 for (Task task:taskList){
                     JSONObject jsonTask=new JSONObject(task);
-                    List<HistoryItem> historyItems=historyItemRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
-
-                    Instant start=null;
-                    int seconds=0;
-                    for (int i = historyItems.size()-1; i >=0 ; i--) {
-                        HistoryItem historyItem=historyItems.get(i);
-                        if(start==null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) continue;
-                        if(start==null && historyItem.getStatus()==TaskStatus.IN_PROGRESS) start=historyItem.getTimestamp();
-                        if(start!=null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) {
-                            Duration duration=Duration.between(start,historyItem.getTimestamp());
-                            seconds+=duration.getSeconds();
-                            start=null;
-                        }
-                    }
-                    if (start!=null){
-                        seconds+=Duration.between(start, Instant.now()).getSeconds();
-                    }
-                    jsonTask.put("history", new JSONArray(historyItems));
-                    jsonTask.put("seconds", seconds);
+                    jsonTask.put("history", new JSONArray(List.of()));
+                    jsonTask.put("seconds", 0);
                     result.put(jsonTask);
                 }
 

@@ -12,7 +12,6 @@ import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
 import ua.com.serverhelp.mytasktracking.data.entities.*;
 import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,9 @@ public class TaskRest {
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
-    private HistoryItemRepository historyItemRepository;
+    private TaskStatusRepository taskStatusRepository;
+    @Autowired
+    private PeriodRepository periodRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getTasks(
@@ -43,25 +44,8 @@ public class TaskRest {
             List<Task> taskList=taskRepository.findByOwner(uid);
             for (Task task:taskList){
                 JSONObject jsonTask=new JSONObject(task);
-                List<HistoryItem> historyItems=historyItemRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
-
-                Instant start=null;
-                int seconds=0;
-                for (int i = historyItems.size()-1; i >=0 ; i--) {
-                    HistoryItem historyItem=historyItems.get(i);
-                    if(start==null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) continue;
-                    if(start==null && historyItem.getStatus()==TaskStatus.IN_PROGRESS) start=historyItem.getTimestamp();
-                    if(start!=null && historyItem.getStatus()!=TaskStatus.IN_PROGRESS) {
-                        Duration duration=Duration.between(start,historyItem.getTimestamp());
-                        seconds+=duration.getSeconds();
-                        start=null;
-                    }
-                }
-                if (start!=null){
-                    seconds+=Duration.between(start, Instant.now()).getSeconds();
-                }
-                jsonTask.put("history", new JSONArray(historyItems));
-                jsonTask.put("seconds", seconds);
+                jsonTask.put("history", new JSONArray(List.of()));
+                jsonTask.put("seconds", 0);
                 result.put(jsonTask);
             }
 
@@ -84,10 +68,9 @@ public class TaskRest {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
                 Task task1=taskRepository.save(task);
-                HistoryItem historyItem=new HistoryItem();
-                historyItem.setTask(task1);
-                historyItem.setStatus(TaskStatus.NEW);
-                historyItemRepository.save(historyItem);
+                TaskStatus taskStatus=new TaskStatus();
+                taskStatus.setTask(task1);
+                taskStatusRepository.save(taskStatus);
                 return ResponseEntity.ok().body(new JSONObject(task1).toString());
             }
         }
@@ -125,8 +108,11 @@ public class TaskRest {
                 if(task.get().getProject().getOrganization().getOwner().getId()!=uid){
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                List<HistoryItem> history=historyItemRepository.findByTask(task.get(), Sort.unsorted());
-                historyItemRepository.deleteAll(history);
+                List<TaskStatus> taskStatuses=taskStatusRepository.findByTask(task.get(), Sort.unsorted());
+                taskStatusRepository.deleteAll(taskStatuses);
+                List<Period> periods=periodRepository.findByTask(task.get(), Sort.unsorted());
+                periodRepository.deleteAll(periods);
+
                 taskRepository.delete(task.get());
                 return ResponseEntity.ok().body("Success");
             }
@@ -170,13 +156,100 @@ public class TaskRest {
                 }
                 Task task=taskOptional.get();
                 try {
-                    HistoryItem historyItem = new HistoryItem();
-                    historyItem.setTask(task);
-                    historyItem.setStatus(TaskStatus.valueOf(newStatus));
-                    historyItemRepository.save(historyItem);
+                    TaskStatus taskStatus=new TaskStatus();
+                    taskStatus.setTask(task);
+                    taskStatus.setTaskStatus(TaskStatusEnum.valueOf(newStatus));
+                    taskStatusRepository.save(taskStatus);
                 }catch (IllegalArgumentException e){
                     return ResponseEntity.badRequest().body("Status invalid");
                 }
+                return ResponseEntity.ok().body(new JSONObject(task).toString());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+    }
+    @PostMapping(value = "/{taskId}/startPeriod",produces = "application/json")
+    public ResponseEntity<String> startPeriod(
+            @PathVariable long taskId,
+            Authentication authentication
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Task> taskOptional=taskRepository.findById(taskId);
+            if (taskOptional.isPresent()){
+                if(taskOptional.get().getProject().getOrganization().getOwner().getId()!=uid){
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                Task task=taskOptional.get();
+
+                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
+                if (!periods.isEmpty()){
+                    if(periods.get(0).getStop()==null){
+                        return ResponseEntity.badRequest().body("Task already started");
+                    }
+                }
+                Period period=new Period();
+                period.setTask(task);
+                periodRepository.save(period);
+
+                return ResponseEntity.ok().body(new JSONObject(task).toString());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+    }
+    @PostMapping(value = "/{taskId}/stopPeriod",produces = "application/json")
+    public ResponseEntity<String> stopPeriod(
+            @PathVariable long taskId,
+            Authentication authentication
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Task> taskOptional=taskRepository.findById(taskId);
+            if (taskOptional.isPresent()){
+                if(taskOptional.get().getProject().getOrganization().getOwner().getId()!=uid){
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                Task task=taskOptional.get();
+
+                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
+                if (!periods.isEmpty()){
+                    if(periods.get(0).getStop()==null){
+                        Period period=periods.get(0);
+                        period.setStop(Instant.now());
+                        periodRepository.save(period);
+                        return ResponseEntity.ok().body(new JSONObject(task).toString());
+                    }
+                    return ResponseEntity.badRequest().body("Task was stopped");
+                }
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+    }
+    @PostMapping(value = "/{taskId}/resetPeriod",produces = "application/json")
+    public ResponseEntity<String> resetPeriod(
+            @PathVariable long taskId,
+            @RequestParam int newSeconds,
+            Authentication authentication
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Task> taskOptional=taskRepository.findById(taskId);
+            if (taskOptional.isPresent()){
+                if(taskOptional.get().getProject().getOrganization().getOwner().getId()!=uid){
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                Task task=taskOptional.get();
+
+                List<Period> periods=periodRepository.findByTask(task, Sort.unsorted());
+                periodRepository.deleteAll(periods);
+
+                Period period = periods.get(0);
+                period.setStart(Instant.now().minusSeconds(newSeconds));
+                period.setStop(Instant.now());
+                periodRepository.save(period);
                 return ResponseEntity.ok().body(new JSONObject(task).toString());
             }
         }
