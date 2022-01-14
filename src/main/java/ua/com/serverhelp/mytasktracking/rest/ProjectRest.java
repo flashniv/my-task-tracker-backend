@@ -30,6 +30,10 @@ public class ProjectRest {
     private AccountRepository accountRepository;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private PeriodRepository periodRepository;
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
 
     @GetMapping(value = "/",produces = "application/json")
     public ResponseEntity<String> getProjects(
@@ -142,9 +146,10 @@ public class ProjectRest {
                 JSONArray result=new JSONArray();
                 List<Task> taskList=taskRepository.findByProject(project.get());
                 for (Task task:taskList){
+                    Optional<TaskStatus> optionalTaskStatus=taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
                     JSONObject jsonTask=new JSONObject(task);
-                    jsonTask.put("history", new JSONArray(List.of()));
-                    jsonTask.put("seconds", 0);
+                    optionalTaskStatus.ifPresent(taskStatus -> jsonTask.put("status", taskStatus.getTaskStatus().toString()));
+                    jsonTask.put("seconds", periodRepository.getSecondsByTask(Instant.now(),task.getId()));
                     result.put(jsonTask);
                 }
 

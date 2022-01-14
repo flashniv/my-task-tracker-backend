@@ -43,9 +43,10 @@ public class TaskRest {
             JSONArray result=new JSONArray();
             List<Task> taskList=taskRepository.findByOwner(uid);
             for (Task task:taskList){
+                Optional<TaskStatus> optionalTaskStatus=taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
                 JSONObject jsonTask=new JSONObject(task);
-                jsonTask.put("history", new JSONArray(List.of()));
-                jsonTask.put("seconds", 0);
+                optionalTaskStatus.ifPresent(taskStatus -> jsonTask.put("status", taskStatus.getTaskStatus().toString()));
+                jsonTask.put("seconds", periodRepository.getSecondsByTask(Instant.now(),task.getId()));
                 result.put(jsonTask);
             }
 
@@ -183,7 +184,7 @@ public class TaskRest {
                 }
                 Task task=taskOptional.get();
 
-                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
+                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"start"));
                 if (!periods.isEmpty()){
                     if(periods.get(0).getStop()==null){
                         return ResponseEntity.badRequest().body("Task already started");
@@ -213,7 +214,7 @@ public class TaskRest {
                 }
                 Task task=taskOptional.get();
 
-                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"timestamp"));
+                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"start"));
                 if (!periods.isEmpty()){
                     if(periods.get(0).getStop()==null){
                         Period period=periods.get(0);
