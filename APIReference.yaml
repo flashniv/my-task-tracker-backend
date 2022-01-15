@@ -477,7 +477,7 @@ paths:
         - task
   /task/{taskId}/startPeriod:
     summary: start task period
-    post:
+    put:
       summary: start task period
       parameters:
         - in: path
@@ -504,7 +504,7 @@ paths:
         - task
   /task/{taskId}/stopPeriod:
     summary: stop task period
-    post:
+    put:
       summary: stop task period
       parameters:
         - in: path
@@ -512,6 +512,12 @@ paths:
           required: true
           schema:
             type: integer
+        - in: query
+          name: newStatus
+          required: false
+          schema:
+            type: string
+
       responses:
         '200':
           description: return updated Task
@@ -531,7 +537,7 @@ paths:
         - task
   /task/{taskId}/resetPeriod:
     summary: reset task period
-    post:
+    put:
       summary: reset task period
       parameters:
         - in: path

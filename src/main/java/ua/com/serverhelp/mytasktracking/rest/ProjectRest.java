@@ -1,19 +1,18 @@
 package ua.com.serverhelp.mytasktracking.rest;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ua.com.serverhelp.mytasktracking.conf.AccountUserDetail;
-import ua.com.serverhelp.mytasktracking.data.entities.*;
+import ua.com.serverhelp.mytasktracking.data.entities.Account;
+import ua.com.serverhelp.mytasktracking.data.entities.Organization;
+import ua.com.serverhelp.mytasktracking.data.entities.Project;
+import ua.com.serverhelp.mytasktracking.data.entities.Task;
 import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -143,17 +142,13 @@ public class ProjectRest {
                 if (!Objects.equals(project.get().getOrganization().getOwner().getId(), account.get().getId())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                JSONArray result=new JSONArray();
+                JSONArray res=new JSONArray();
                 List<Task> taskList=taskRepository.findByProject(project.get());
                 for (Task task:taskList){
-                    Optional<TaskStatus> optionalTaskStatus=taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
-                    JSONObject jsonTask=new JSONObject(task);
-                    optionalTaskStatus.ifPresent(taskStatus -> jsonTask.put("status", taskStatus.getTaskStatus().toString()));
-                    jsonTask.put("seconds", periodRepository.getSecondsByTask(Instant.now(),task.getId()));
-                    result.put(jsonTask);
+                    res.put(taskRepository.getCustomTask(task));
                 }
 
-                return ResponseEntity.ok().body(result.toString());
+                return ResponseEntity.ok().body(res.toString());
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Access denied");

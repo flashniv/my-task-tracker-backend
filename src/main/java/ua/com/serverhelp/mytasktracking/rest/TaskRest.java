@@ -40,17 +40,13 @@ public class TaskRest {
         long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
         Optional<Account> account = accountRepository.findById(uid);
         if (account.isPresent()) {
-            JSONArray result=new JSONArray();
+            JSONArray res=new JSONArray();
             List<Task> taskList=taskRepository.findByOwner(uid);
             for (Task task:taskList){
-                Optional<TaskStatus> optionalTaskStatus=taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
-                JSONObject jsonTask=new JSONObject(task);
-                optionalTaskStatus.ifPresent(taskStatus -> jsonTask.put("status", taskStatus.getTaskStatus().toString()));
-                jsonTask.put("seconds", periodRepository.getSecondsByTask(Instant.now(),task.getId()));
-                result.put(jsonTask);
+                res.put(taskRepository.getCustomTask(task));
             }
 
-            return ResponseEntity.ok(result.toString());
+            return ResponseEntity.ok(res.toString());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
@@ -169,7 +165,7 @@ public class TaskRest {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
-    @PostMapping(value = "/{taskId}/startPeriod",produces = "application/json")
+    @PutMapping(value = "/{taskId}/startPeriod",produces = "application/json")
     public ResponseEntity<String> startPeriod(
             @PathVariable long taskId,
             Authentication authentication
@@ -190,6 +186,15 @@ public class TaskRest {
                         return ResponseEntity.badRequest().body("Task already started");
                     }
                 }
+                try {
+                    TaskStatus taskStatus=new TaskStatus();
+                    taskStatus.setTask(task);
+                    taskStatus.setTaskStatus(TaskStatusEnum.valueOf("IN_PROGRESS"));
+                    taskStatusRepository.save(taskStatus);
+                }catch (IllegalArgumentException e){
+                    return ResponseEntity.badRequest().body("Status invalid");
+                }
+
                 Period period=new Period();
                 period.setTask(task);
                 periodRepository.save(period);
@@ -199,9 +204,10 @@ public class TaskRest {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
-    @PostMapping(value = "/{taskId}/stopPeriod",produces = "application/json")
+    @PutMapping(value = "/{taskId}/stopPeriod",produces = "application/json")
     public ResponseEntity<String> stopPeriod(
             @PathVariable long taskId,
+            @RequestParam(required = false,defaultValue = "ON_PAUSE") String newStatus,
             Authentication authentication
     ) {
         long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
@@ -217,6 +223,15 @@ public class TaskRest {
                 List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"start"));
                 if (!periods.isEmpty()){
                     if(periods.get(0).getStop()==null){
+                        try {
+                            TaskStatus taskStatus=new TaskStatus();
+                            taskStatus.setTask(task);
+                            taskStatus.setTaskStatus(TaskStatusEnum.valueOf(newStatus));
+                            taskStatusRepository.save(taskStatus);
+                        }catch (IllegalArgumentException e){
+                            return ResponseEntity.badRequest().body("Status invalid");
+                        }
+
                         Period period=periods.get(0);
                         period.setStop(Instant.now());
                         periodRepository.save(period);
@@ -228,7 +243,7 @@ public class TaskRest {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
     }
-    @PostMapping(value = "/{taskId}/resetPeriod",produces = "application/json")
+    @PutMapping(value = "/{taskId}/resetPeriod",produces = "application/json")
     public ResponseEntity<String> resetPeriod(
             @PathVariable long taskId,
             @RequestParam int newSeconds,
@@ -246,6 +261,14 @@ public class TaskRest {
 
                 List<Period> periods=periodRepository.findByTask(task, Sort.unsorted());
                 periodRepository.deleteAll(periods);
+                try {
+                    TaskStatus taskStatus=new TaskStatus();
+                    taskStatus.setTask(task);
+                    taskStatus.setTaskStatus(TaskStatusEnum.valueOf("ON_PAUSE"));
+                    taskStatusRepository.save(taskStatus);
+                }catch (IllegalArgumentException e){
+                    return ResponseEntity.badRequest().body("Status invalid");
+                }
 
                 Period period = periods.get(0);
                 period.setStart(Instant.now().minusSeconds(newSeconds));
