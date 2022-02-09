@@ -13,6 +13,7 @@ import ua.com.serverhelp.mytasktracking.data.entities.*;
 import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,6 +70,52 @@ public class TaskRest {
                 taskStatus.setTask(task1);
                 taskStatusRepository.save(taskStatus);
                 return ResponseEntity.ok().body(new JSONObject(task1).toString());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+    }
+    @PostMapping(value = "/updateStatus",produces = "application/json")
+    public ResponseEntity<String> updateAllTaskStatus(
+            @RequestParam String newStatus,
+            @RequestBody Task[] tasks,
+            Authentication authentication
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            List<Long> taskIds=new ArrayList<>();
+            List<TaskStatus> newStatuses=new ArrayList<>();
+            //get IDs in array
+            for (Task task: tasks){
+                taskIds.add(task.getId());
+            }
+            List<Task> tasksFromDB=taskRepository.findAllById(taskIds);
+            //generate new statuses
+            for (Task task:tasksFromDB){
+                if(task.getProject().getOrganization().getOwner().getId()!=uid){
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                }
+                //Check if period was started
+                List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"start"));
+                if (!periods.isEmpty() && periods.get(0).getStop() == null) {
+                    Period period = periods.get(0);
+                    period.setStop(Instant.now());
+                    periodRepository.save(period);
+                }
+                //set status
+                try {
+                    TaskStatus taskStatus=new TaskStatus();
+                    taskStatus.setTask(task);
+                    taskStatus.setTaskStatus(TaskStatusEnum.valueOf(newStatus));
+                    newStatuses.add(taskStatus);
+                }catch (IllegalArgumentException e){
+                    return ResponseEntity.badRequest().body("Status invalid");
+                }
+            }
+            //save new statuses
+            if (tasks.length>0 && tasks.length==newStatuses.size()) {
+                taskStatusRepository.saveAll(newStatuses);
+                return ResponseEntity.ok().body("Success");
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");

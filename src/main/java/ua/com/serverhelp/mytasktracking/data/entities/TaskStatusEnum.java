@@ -10,5 +10,6 @@ public enum TaskStatusEnum {
     ON_REVIEW,
     BLOCKED,
     ON_PAUSE,
-    DONE
+    DONE,
+    ARCHIVED
 }

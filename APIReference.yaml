@@ -363,6 +363,44 @@ paths:
           description: Default error sample response
       tags:
         - task
+  /task/updateStatus:
+    summary: Update task status
+    post:
+      summary: Update task status
+      parameters:
+        - in: query
+          name: newStatus
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Tasks
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: return updated Task
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied
+        '404':
+          description: Not found
+        '400':
+          description: Common error
+        default:
+          description: Default error sample response
+      tags:
+        - task
   /task/{taskId}:
     summary: all about task. Add, delete, edit
     get:
