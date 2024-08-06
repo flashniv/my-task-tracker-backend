@@ -8,7 +8,6 @@ import ua.com.serverhelp.mytasktracking.data.entities.Task;
 import ua.com.serverhelp.mytasktracking.data.entities.TaskStatus;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,21 +18,24 @@ public class TaskRepositoryImpl implements TaskRepositoryCustom {
     private TaskStatusRepository taskStatusRepository;
 
     @Override
-    public JSONObject getCustomTask(Task task){
-        JSONObject jsonTask=new JSONObject(task);
-        Optional<TaskStatus> optionalTaskStatus=taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
-        optionalTaskStatus.ifPresent(taskStatus -> jsonTask.put("status", taskStatus.getTaskStatus().toString()));
+    public JSONObject getCustomTask(Task task) {
+        JSONObject jsonTask = new JSONObject(task);
+        Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findTopByTaskOrderByTimestampDesc(task);
+        optionalTaskStatus.ifPresent(taskStatus -> {
+            jsonTask.put("status", taskStatus.getTaskStatus().toString());
+            jsonTask.put("statusChangeAt", taskStatus.getTimestamp());
+        });
         //process periods
-        List<Period> periods=periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC,"start"));
-        long seconds=0;
-        for (Period period:periods){
-            if(period.getStop()==null){
+        List<Period> periods = periodRepository.findByTask(task, Sort.by(Sort.Direction.DESC, "start"));
+        long seconds = 0;
+        for (Period period : periods) {
+            if (period.getStop() == null) {
                 //period.setStop(Instant.now());
                 jsonTask.put("isPlay", period.getStart());
                 continue;
             }
-            Duration duration=Duration.between(period.getStart(), period.getStop());
-            seconds+= duration.getSeconds();
+            Duration duration = Duration.between(period.getStart(), period.getStop());
+            seconds += duration.getSeconds();
         }
         jsonTask.put("seconds", seconds);
         return jsonTask;

@@ -17,9 +17,9 @@ public class AccountUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        Account account=accountRepository.findByLogin(s);
-        if(account==null){
-            throw new UsernameNotFoundException("SimpleUserDetailsService::loadUserByUsername User "+s+" not found");
+        Account account = accountRepository.findByLogin(s);
+        if (account == null) {
+            throw new UsernameNotFoundException("SimpleUserDetailsService::loadUserByUsername User " + s + " not found");
         }
         return new AccountUserDetail(account);
     }

@@ -8,7 +8,7 @@ import ua.com.serverhelp.mytasktracking.data.entities.TaskStatus;
 import java.util.List;
 import java.util.Optional;
 
-public interface TaskStatusRepository extends JpaRepository<TaskStatus,Long> {
+public interface TaskStatusRepository extends JpaRepository<TaskStatus, Long> {
     List<TaskStatus> findByTask(Task task, Sort unsorted);
 
     Optional<TaskStatus> findTopByTaskOrderByTimestampDesc(Task task);

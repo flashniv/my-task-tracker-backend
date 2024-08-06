@@ -12,6 +12,6 @@ public class Project {
     private Long id;
     private String projectName;
     @ManyToOne
-    @JoinColumn(name="organization_id", nullable=false)
+    @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 }

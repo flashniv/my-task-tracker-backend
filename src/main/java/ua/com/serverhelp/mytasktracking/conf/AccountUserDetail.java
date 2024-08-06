@@ -14,7 +14,7 @@ public class AccountUserDetail implements UserDetails {
         this.account = account;
     }
 
-    public Long getId(){
+    public Long getId() {
         return account.getId();
     }
 

@@ -9,23 +9,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ua.com.serverhelp.mytasktracking.data.entities.*;
-import ua.com.serverhelp.mytasktracking.data.repositories.*;
 
 @SpringBootApplication
 @EnableCaching
 @EnableScheduling
 public class MyTaskTrackingApplication {
-	@Bean
-	public PasswordEncoder passwordEncoder(){
-		return new BCryptPasswordEncoder(4);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MyTaskTrackingApplication.class, args);
+    }
 
-	@Bean
-	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
-		return new CommandLineRunner() {
-			@Override
-			public void run(String... args) throws Exception {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(4);
+    }
+
+    @Bean
+    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+        return new CommandLineRunner() {
+            @Override
+            public void run(String... args) throws Exception {
 				/*AccountRepository accountRepository=ctx.getBean(AccountRepository.class);
 				OrganizationRepository organizationRepository=ctx.getBean(OrganizationRepository.class);
 				ProjectRepository projectRepository=ctx.getBean(ProjectRepository.class);
@@ -75,12 +77,8 @@ public class MyTaskTrackingApplication {
 				period1.setTask(task1);
 				periodRepository.save(period1);*/
 
-			}
-		};
-	}
-
-	public static void main(String[] args) {
-		SpringApplication.run(MyTaskTrackingApplication.class, args);
-	}
+            }
+        };
+    }
 
 }

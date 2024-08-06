@@ -28,33 +28,34 @@ public class OrganizationRest {
     @Autowired
     private ProjectRepository projectRepository;
 
-    @GetMapping(value = "/",produces = "application/json")
+    @GetMapping(value = "/", produces = "application/json")
     public ResponseEntity<String> getAllOrganizations(
             Authentication authentication
-    ){
-        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account=accountRepository.findById(uid);
-        if(account.isPresent()) {
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
             List<Organization> organizations = organizationRepository.findByOwner(account.get());
-            JSONArray result=new JSONArray(organizations);
+            JSONArray result = new JSONArray(organizations);
             return ResponseEntity.ok(result.toString());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
-    @GetMapping(value = "/{organizationId}/projects",produces = "application/json")
+
+    @GetMapping(value = "/{organizationId}/projects", produces = "application/json")
     public ResponseEntity<String> getProjectsByOrg(
             @PathVariable long organizationId,
             Authentication authentication
-    ){
-        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account=accountRepository.findById(uid);
-        if(account.isPresent()) {
-            Optional<Organization> optionalOrganization=organizationRepository.findById(organizationId);
-            if(optionalOrganization.isPresent()){
-                if (optionalOrganization.get().getOwner().getId()!=uid){
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Organization> optionalOrganization = organizationRepository.findById(organizationId);
+            if (optionalOrganization.isPresent()) {
+                if (optionalOrganization.get().getOwner().getId() != uid) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
                 }
-                List<Project> projectList=projectRepository.findByOrganization(optionalOrganization.get());
+                List<Project> projectList = projectRepository.findByOrganization(optionalOrganization.get());
                 return ResponseEntity.ok().body(new JSONArray(projectList).toString());
             }
         }
@@ -65,10 +66,10 @@ public class OrganizationRest {
     public ResponseEntity<Organization> addOrganization(
             @RequestBody Organization organization,
             Authentication authentication
-    ){
-        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account=accountRepository.findById(uid);
-        if(account.isPresent()) {
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
             organization.setOwner(account.get());
             return ResponseEntity.ok(organizationRepository.save(organization));
         }
@@ -79,13 +80,13 @@ public class OrganizationRest {
     public ResponseEntity<String> delete(
             @PathVariable long organizationId,
             Authentication authentication
-    ){
-        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account=accountRepository.findById(uid);
-        if(account.isPresent()) {
-            Optional<Organization> organization=organizationRepository.findById(organizationId);
-            if(organization.isPresent()){
-                if(organization.get().getOwner().getId()==uid){
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Organization> organization = organizationRepository.findById(organizationId);
+            if (organization.isPresent()) {
+                if (organization.get().getOwner().getId() == uid) {
                     organizationRepository.delete(organization.get());
                     return ResponseEntity.ok("Success");
                 }
@@ -95,18 +96,19 @@ public class OrganizationRest {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request");
     }
+
     @PutMapping("/{organizationId}")
     public ResponseEntity<String> update(
             @PathVariable long organizationId,
             @RequestBody Organization inputOrganization,
             Authentication authentication
-    ){
-        long uid=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> account=accountRepository.findById(uid);
-        if(account.isPresent()) {
-            Optional<Organization> organization=organizationRepository.findById(organizationId);
-            if(organization.isPresent()){
-                if(organization.get().getOwner().getId()==uid){
+    ) {
+        long uid = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> account = accountRepository.findById(uid);
+        if (account.isPresent()) {
+            Optional<Organization> organization = organizationRepository.findById(organizationId);
+            if (organization.isPresent()) {
+                if (organization.get().getOwner().getId() == uid) {
                     inputOrganization.setId(organizationId);
                     organizationRepository.save(inputOrganization);
                     return ResponseEntity.ok("Success");

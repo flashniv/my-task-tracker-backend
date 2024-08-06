@@ -24,16 +24,16 @@ public class AccountRest {
     @GetMapping("/")
     public ResponseEntity<Account> getAccount(
             Authentication authentication
-    ){
-        long id=((AccountUserDetail) authentication.getPrincipal()).getId();
-        Optional<Account> accountOptional=accountRepository.findById(id);
+    ) {
+        long id = ((AccountUserDetail) authentication.getPrincipal()).getId();
+        Optional<Account> accountOptional = accountRepository.findById(id);
         return accountOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 
     @PostMapping("/")
     public ResponseEntity<Account> addAccount(
             @RequestBody Account account
-    ){
+    ) {
         account.setPasswordHash(passwordEncoder.encode(account.getPasswordHash()));
         return ResponseEntity.ok(accountRepository.save(account));
     }

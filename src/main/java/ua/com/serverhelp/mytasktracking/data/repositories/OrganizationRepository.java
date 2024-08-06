@@ -6,6 +6,6 @@ import ua.com.serverhelp.mytasktracking.data.entities.Organization;
 
 import java.util.List;
 
-public interface OrganizationRepository extends JpaRepository<Organization,Long> {
+public interface OrganizationRepository extends JpaRepository<Organization, Long> {
     List<Organization> findByOwner(Account account);
 }

@@ -12,9 +12,9 @@ public class TaskStatus {
     @GeneratedValue
     private Long id;
     @ManyToOne
-    @JoinColumn(name="task_id", nullable=false)
+    @JoinColumn(name = "task_id", nullable = false)
     private Task task;
-    private Instant timestamp=Instant.now();
+    private Instant timestamp = Instant.now();
     @Enumerated(EnumType.ORDINAL)
-    private TaskStatusEnum taskStatus=TaskStatusEnum.NEW;
+    private TaskStatusEnum taskStatus = TaskStatusEnum.NEW;
 }
